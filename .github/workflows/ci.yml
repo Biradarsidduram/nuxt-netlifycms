@@ -1,4 +1,4 @@
-name: ci
+name: Publish Web
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14]
+        node: [12]
 
     steps:
       - name: Checkout 🛎
@@ -45,6 +45,19 @@ jobs:
       - name: Install dependencies 👨🏻‍💻
         run: yarn
 
+      - name: Build Project
+        run: yarn generate
 
-      - name: Run tests 🧪
-        run: yarn test
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v1.2
+        id: netlify-deploy
+        with:
+          publish-dir: './dist'
+          production-branch: master
+          deploy-message: "Prod deploy from GitHub v${{ github.ref }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Netlify URL
+        run: echo netlify URL ${{ steps.netlify-deploy.outputs.deploy-url }}  
